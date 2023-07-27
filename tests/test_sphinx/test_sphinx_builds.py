@@ -550,6 +550,8 @@ def test_fieldlist_extension(
                 'noindexentry="False" ': "",
                 # changed in sphinx 5.3, for `desc_signature` node
                 '_toc_name="send_message()" _toc_parts="(\'send_message\',)" ': "",
+                # changed in sphinx 7.1 to add attribute
+                'multi_line_parameter_list="False" ': "",
             },
         )
     finally:
