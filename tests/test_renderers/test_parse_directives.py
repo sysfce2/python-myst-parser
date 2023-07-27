@@ -75,6 +75,15 @@ def test_parsing_errors(descript, klass, arguments, content):
         parse_directive_text(klass, arguments, content, 0)
 
 
+def test_parsing_full_yaml():
+    result = parse_directive_text(
+        Note, "", "---\na: [1]\n---\ncontent", 0, validate_options=False
+    )
+    assert not result.warnings
+    assert result.options == {"a": [1]}
+    assert result.body == ["content"]
+
+
 def test_additional_options():
     """Allow additional options to be passed to a directive."""
     # this should be fine
