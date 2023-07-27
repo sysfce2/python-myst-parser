@@ -60,7 +60,7 @@ class DirectiveParsingResult:
     """The lines of body content"""
     body_offset: int
     """The number of lines to the start of the body content."""
-    warnings: list[tuple[str, int]]
+    warnings: list[tuple[str, int | None]]
     """List of non-fatal errors encountered during parsing.
     (message, line_number)
     """
@@ -70,8 +70,8 @@ def parse_directive_text(
     directive_class: type[Directive],
     first_line: str,
     content: str,
-    line: int,
     *,
+    line: int | None = None,
     validate_options: bool = True,
     additional_options: dict[str, str] | None = None,
 ) -> DirectiveParsingResult:
@@ -88,14 +88,14 @@ def parse_directive_text(
 
     :raises MarkupError: if there is a fatal parsing/validation error
     """
-    parse_errors: list[tuple[str, int]] = []
+    parse_errors: list[tuple[str, int | None]] = []
     options: dict[str, Any] = {}
     body_lines = content.splitlines()
     content_offset = 0
 
     if directive_class.option_spec:
         # only look for an option block if there are possible options
-        body, options, option_errors = _parse_directive_options(
+        body, options, option_errors = parse_directive_options(
             content,
             directive_class,
             line=line,
@@ -122,27 +122,27 @@ def parse_directive_text(
 
     # check for body content
     if body_lines and not directive_class.has_content:
-        parse_errors.append(("Has content, but none permitted", line + content_offset))
+        parse_errors.append(("Has content, but none permitted", None))
 
     return DirectiveParsingResult(
         arguments, options, body_lines, content_offset, parse_errors
     )
 
 
-def _parse_directive_options(
+def parse_directive_options(
     content: str,
     directive_class: type[Directive],
     as_yaml: bool,
-    line: int,
+    line: int | None,
     additional_options: dict[str, str] | None = None,
-) -> tuple[str, dict, list[tuple[str, int]]]:
+) -> tuple[str, dict, list[tuple[str, int | None]]]:
     """Parse (and validate) the directive option section.
 
     :returns: (content, options, validation_errors)
     """
     yaml_block: None | str = None
     if content.startswith("---"):
-        line += 1
+        line = None if line is None else line + 1
         content = "\n".join(content.splitlines()[1:])
         match = re.search(r"^-{3,}", content, re.MULTILINE)
         if match:
@@ -163,7 +163,7 @@ def _parse_directive_options(
         content = "\n".join(content_lines)
 
     if as_yaml:
-        yaml_errors: list[tuple[str, int]] = []
+        yaml_errors: list[tuple[str, int | None]] = []
         try:
             yaml_options = yaml.safe_load(yaml_block or "") or {}
         except (yaml.parser.ParserError, yaml.scanner.ScannerError):
@@ -194,7 +194,7 @@ def _parse_directive_options(
     options_spec: dict[str, Callable] = directive_class.option_spec
     unknown_options: list[str] = []
     new_options: dict[str, Any] = {}
-    validation_errors: list[tuple[str, int]] = []
+    validation_errors: list[tuple[str, int | None]] = []
     value: str | None
     for name, value in options.items():
         try:

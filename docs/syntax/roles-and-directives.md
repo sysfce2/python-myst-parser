@@ -74,7 +74,7 @@ print(f'my {a}nd line')
 :::
 
 Comments, starting `#`, are also allowed in between options or at the end of values, and are ignored.
-The values can be enclosed in quotes and span multiple lines.
+The values can be enclosed in quotes (`"` or `'`) and span multiple lines.
 Newline behaviour can be controlled by starting the value with `|` (preserve newlines) or `>` (collapse newlines):
 
 :::{myst-example}

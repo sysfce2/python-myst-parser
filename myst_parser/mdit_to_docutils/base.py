@@ -1752,7 +1752,7 @@ class DocutilsRenderer(RendererProtocol):
             self.create_warning(
                 f"{name!r}: {warning_msg}",
                 MystWarnings.DIRECTIVE_PARSING,
-                line=warning_line,
+                line=warning_line if warning_line is not None else position,
                 append_to=self.current_node,
             )
 

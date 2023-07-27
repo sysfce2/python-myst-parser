@@ -140,7 +140,7 @@ class MockState:
         if option_presets:
             raise MockingError("parse_directive_block: option_presets not implemented")
         # TODO should argument_str always be ""?
-        parsed = parse_directive_text(directive, "", "\n".join(content), self._lineno)
+        parsed = parse_directive_text(directive, "", "\n".join(content))
         if parsed.warnings:
             raise MarkupError(",".join(w for w, _ in parsed.warnings))
         return (
