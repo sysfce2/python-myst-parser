@@ -162,7 +162,8 @@ body: []
 content_offset: 3
 options: {}
 warnings:
-- Invalid options format (bad YAML)
+- - 'Unknown option keys: [''a''] (allowed: [''class'', ''name''])'
+  - 1
 .
 
 warning: yaml not a dict
@@ -178,7 +179,8 @@ body: []
 content_offset: 3
 options: {}
 warnings:
-- Invalid options format (not a dict)
+- - 'Invalid options format: expected '':'' after key'
+  - 1
 .
 
 warning: unknown option name
@@ -192,7 +194,8 @@ body: []
 content_offset: 1
 options: {}
 warnings:
-- 'Unknown option keys: [''unknown''] (allowed: [''class'', ''name''])'
+- - 'Unknown option keys: [''unknown''] (allowed: [''class'', ''name''])'
+  - 0
 .
 
 warning: invalid option value
@@ -206,7 +209,8 @@ body: []
 content_offset: 1
 options: {}
 warnings:
-- 'Invalid option value for ''class'': 1: cannot make "1" into a class name'
+- - 'Invalid option value for ''class'': 1: cannot make "1" into a class name'
+  - 0
 .
 
 error: missing argument

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -7,8 +8,31 @@ from docutils.parsers.rst.directives.body import Rubric
 from markdown_it import MarkdownIt
 
 from myst_parser.parsers.directives import MarkupError, parse_directive_text
+from myst_parser.parsers.options import TokenizeError
+from myst_parser.parsers.options import to_dict as options_to_dict
 
 FIXTURE_PATH = Path(__file__).parent.joinpath("fixtures")
+
+
+@pytest.mark.param_file(FIXTURE_PATH / "option_parsing.txt")
+def test_option_parsing(file_params):
+    """Test parsing of directive options."""
+    result = options_to_dict(file_params.content)
+    file_params.assert_expected(
+        json.dumps(result, ensure_ascii=False, indent=2), rstrip_lines=True
+    )
+
+
+@pytest.mark.param_file(FIXTURE_PATH / "option_parsing_errors.txt")
+def test_option_parsing_errors(file_params):
+    """Test parsing of directive options."""
+    try:
+        options_to_dict(file_params.content)
+    except TokenizeError as err:
+        result = str(err)
+    else:
+        result = "No error"
+    file_params.assert_expected(result, rstrip_lines=True)
 
 
 @pytest.mark.param_file(FIXTURE_PATH / "directive_parsing.txt")
@@ -25,7 +49,7 @@ def test_parsing(file_params):
         raise AssertionError(f"Unknown directive: {name}")
     try:
         result = parse_directive_text(
-            klass, first_line[0] if first_line else "", tokens[0].content
+            klass, first_line[0] if first_line else "", tokens[0].content, 0
         )
     except MarkupError as err:
         outcome = f"error: {err}"
@@ -48,35 +72,35 @@ def test_parsing(file_params):
 )
 def test_parsing_errors(descript, klass, arguments, content):
     with pytest.raises(MarkupError):
-        parse_directive_text(klass, arguments, content)
+        parse_directive_text(klass, arguments, content, 0)
 
 
 def test_additional_options():
     """Allow additional options to be passed to a directive."""
     # this should be fine
     result = parse_directive_text(
-        Note, "", "content", additional_options={"class": "bar"}
+        Note, "", "content", 0, additional_options={"class": "bar"}
     )
     assert not result.warnings
     assert result.options == {"class": ["bar"]}
     assert result.body == ["content"]
     # body on first line should also be fine
     result = parse_directive_text(
-        Note, "content", "other", additional_options={"class": "bar"}
+        Note, "content", "other", 0, additional_options={"class": "bar"}
     )
     assert not result.warnings
     assert result.options == {"class": ["bar"]}
     assert result.body == ["content", "other"]
     # additional option should not take precedence
     result = parse_directive_text(
-        Note, "content", ":class: foo", additional_options={"class": "bar"}
+        Note, "content", ":class: foo", 0, additional_options={"class": "bar"}
     )
     assert not result.warnings
     assert result.options == {"class": ["foo"]}
     assert result.body == ["content"]
     # this should warn about the unknown option
     result = parse_directive_text(
-        Note, "", "content", additional_options={"foo": "bar"}
+        Note, "", "content", 0, additional_options={"foo": "bar"}
     )
     assert len(result.warnings) == 1
-    assert "Unknown option" in result.warnings[0]
+    assert "Unknown option" in result.warnings[0][0]
