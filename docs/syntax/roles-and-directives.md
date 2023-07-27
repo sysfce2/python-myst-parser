@@ -73,12 +73,14 @@ print(f'my {a}nd line')
 ```
 :::
 
+Comments, starting `#`, are also allowed in between options or at the end of values, and are ignored.
 The values can be enclosed in quotes and span multiple lines.
 Newline behaviour can be controlled by starting the value with `|` (preserve newlines) or `>` (collapse newlines):
 
 :::{myst-example}
 ```{code-block} python
-:lineno-start: 10
+:lineno-start: 10  # this is a comment
+: # this is also a comment
 :emphasize-lines: "1, 3"
 :caption: |
 :    This is my
