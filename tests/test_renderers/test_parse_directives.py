@@ -14,7 +14,7 @@ from myst_parser.parsers.options import to_dict as options_to_dict
 FIXTURE_PATH = Path(__file__).parent.joinpath("fixtures")
 
 
-@pytest.mark.param_file(FIXTURE_PATH / "option_parsing.txt")
+@pytest.mark.param_file(FIXTURE_PATH / "option_parsing.yaml", "yaml")
 def test_option_parsing(file_params):
     """Test parsing of directive options."""
     result = options_to_dict(file_params.content)
@@ -23,7 +23,7 @@ def test_option_parsing(file_params):
     )
 
 
-@pytest.mark.param_file(FIXTURE_PATH / "option_parsing_errors.txt")
+@pytest.mark.param_file(FIXTURE_PATH / "option_parsing_errors.yaml", "yaml")
 def test_option_parsing_errors(file_params):
     """Test parsing of directive options."""
     try:
