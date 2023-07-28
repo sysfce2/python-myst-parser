@@ -226,7 +226,7 @@ def tokenize(text: str) -> Iterable[Token]:
         if ch in ("'", '"'):
             yield _scan_flow_scalar(stream, cast(Literal['"', "'"], ch), is_key=True)
         else:
-            yield _parse_plain_scalar(stream, is_key=True)
+            yield _scan_plain_scalar(stream, is_key=True)
 
         _scan_to_next_token(stream)
 
@@ -250,7 +250,7 @@ def tokenize(text: str) -> Iterable[Token]:
         elif ch in ("'", '"'):
             yield _scan_flow_scalar(stream, cast(Literal['"', "'"], ch), is_key=False)
         else:
-            yield _parse_plain_scalar(stream, is_key=False)
+            yield _scan_plain_scalar(stream, is_key=False)
 
 
 def _scan_to_next_token(stream: StreamBuffer) -> None:
@@ -272,7 +272,7 @@ def _scan_to_next_token(stream: StreamBuffer) -> None:
             found = True
 
 
-def _parse_plain_scalar(
+def _scan_plain_scalar(
     stream: StreamBuffer, is_key: bool = False
 ) -> KeyToken | ValueToken:
     chunks = []
