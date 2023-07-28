@@ -11,7 +11,7 @@ which only allows a subset of YAML to be used for directive options:
 Adapted from:
 https://github.com/yaml/pyyaml/commit/957ae4d495cf8fcb5475c6c2f1bce801096b68a5
 
-For good description of mulit-line YAML strings, see:
+For a good description of multi-line YAML strings, see:
 https://stackoverflow.com/a/21699210/5033292
 """
 from __future__ import annotations
