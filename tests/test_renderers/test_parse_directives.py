@@ -9,7 +9,7 @@ from markdown_it import MarkdownIt
 
 from myst_parser.parsers.directives import MarkupError, parse_directive_text
 from myst_parser.parsers.options import TokenizeError
-from myst_parser.parsers.options import to_dict as options_to_dict
+from myst_parser.parsers.options import to_items as options_to_items
 
 FIXTURE_PATH = Path(__file__).parent.joinpath("fixtures")
 
@@ -17,7 +17,7 @@ FIXTURE_PATH = Path(__file__).parent.joinpath("fixtures")
 @pytest.mark.param_file(FIXTURE_PATH / "option_parsing.yaml", "yaml")
 def test_option_parsing(file_params):
     """Test parsing of directive options."""
-    result = options_to_dict(file_params.content)
+    result = list(options_to_items(file_params.content))
     file_params.assert_expected(
         json.dumps(result, ensure_ascii=False, indent=2), rstrip_lines=True
     )
@@ -27,7 +27,7 @@ def test_option_parsing(file_params):
 def test_option_parsing_errors(file_params):
     """Test parsing of directive options."""
     try:
-        options_to_dict(file_params.content)
+        list(options_to_items(file_params.content))
     except TokenizeError as err:
         result = str(err)
     else:

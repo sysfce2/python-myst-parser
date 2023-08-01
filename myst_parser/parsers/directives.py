@@ -47,7 +47,7 @@ from docutils.parsers.rst.directives.misc import TestDirective
 from docutils.parsers.rst.states import MarkupError
 
 from .options import TokenizeError
-from .options import to_dict as options_to_dict
+from .options import to_items as options_to_items
 
 
 @dataclass
@@ -153,6 +153,9 @@ def parse_directive_options(
             content = ""
         yaml_block = dedent(yaml_block)
     elif content.lstrip().startswith(":"):
+        # TODO deprecate allowing initial whitespace (by lstripping)
+        # or at least make it that all have the same indent
+        # also look at mystjs implementation
         content_lines = content.splitlines()
         yaml_lines = []
         while content_lines:
@@ -177,7 +180,7 @@ def parse_directive_options(
     options: dict[str, str] = {}
     if yaml_block is not None:
         try:
-            options = options_to_dict(yaml_block)
+            options = dict(options_to_items(yaml_block))
         except TokenizeError as err:
             return content, options, [(f"Invalid options format: {err.problem}", line)]
 

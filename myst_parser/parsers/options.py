@@ -162,8 +162,10 @@ class TokenizeError(Exception):
         return "\n".join(lines)
 
 
-def to_dict(text: str, line_offset: int = 0, column_offset: int = 0) -> dict[str, str]:
-    """Parse a directive option into a dictionary.
+def to_items(
+    text: str, line_offset: int = 0, column_offset: int = 0
+) -> Iterable[tuple[str, str]]:
+    """Parse a directive option block into (key, value) tuples.
 
     :param text: The directive option text.
     :param line_offset: The line offset to apply to the error positions.
@@ -171,10 +173,8 @@ def to_dict(text: str, line_offset: int = 0, column_offset: int = 0) -> dict[str
 
     :raises: `TokenizeError`
     """
-    output = {}
     for key_token, value_token in to_tokens(text, line_offset, column_offset):
-        output[key_token.value] = value_token.value if value_token is not None else ""
-    return output
+        yield key_token.value, value_token.value if value_token is not None else ""
 
 
 def to_tokens(
