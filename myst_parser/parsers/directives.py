@@ -123,7 +123,7 @@ def parse_directive_text(
                 parse_errors.append(
                     (
                         "Cannot split content across first line and body, "
-                        "when options block is present",
+                        "when options block is present (move first line to body)",
                         None,
                     )
                 )
