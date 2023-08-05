@@ -25,6 +25,21 @@ options: {}
 warnings: []
 .
 
+note: content in first line and body
+.
+```{note} a
+b
+```
+.
+arguments: []
+body:
+- a
+- b
+content_offset: 0
+options: {}
+warnings: []
+.
+
 note: content after option
 .
 ```{note}
@@ -92,11 +107,13 @@ body:
 - first line
 - ''
 - body line
-content_offset: 1
+content_offset: 0
 options:
   class:
   - tip
-warnings: []
+warnings:
+- - Cannot split content across first line and body, when options block is present
+  - null
 .
 
 admonition: no options, no new line

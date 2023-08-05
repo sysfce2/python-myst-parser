@@ -88,28 +88,47 @@ def parse_directive_text(
 
     :raises MarkupError: if there is a fatal parsing/validation error
     """
-    parse_errors: list[tuple[str, int | None]] = []
-    options: dict[str, Any] = {}
-    body_lines = content.splitlines()
-    content_offset = 0
+    parse_errors: list[tuple[str, int | None]]
+    options: dict[str, Any]
+    body_lines: list[str]
+    content_offset: int
+    has_options_block: bool
 
     if directive_class.option_spec:
         # only look for an option block if there are possible options
-        body, options, option_errors = parse_directive_options(
+        # body, options, option_errors = _parse_directive_options(
+        result = _parse_directive_options(
             content,
             directive_class,
             line=line,
             as_yaml=not validate_options,
             additional_options=additional_options,
         )
-        parse_errors.extend(option_errors)
-        body_lines = body.splitlines()
+        parse_errors = result.errors
+        has_options_block = result.has_options
+        options = result.options
+        body_lines = result.content.splitlines()
         content_offset = len(content.splitlines()) - len(body_lines)
+    else:
+        parse_errors = []
+        has_options_block = False
+        options = {}
+        body_lines = content.splitlines()
+        content_offset = 0
 
     if not (directive_class.required_arguments or directive_class.optional_arguments):
-        # If there are no possible arguments, then the body starts on the argument line
+        # If there are no possible arguments, then the body can start on the argument line
         if first_line:
+            if has_options_block and any(body_lines):
+                parse_errors.append(
+                    (
+                        "Cannot split content across first line and body, "
+                        "when options block is present",
+                        None,
+                    )
+                )
             body_lines.insert(0, first_line)
+            content_offset = 0
         arguments = []
     else:
         arguments = parse_directive_arguments(directive_class, first_line)
@@ -129,13 +148,21 @@ def parse_directive_text(
     )
 
 
-def parse_directive_options(
+@dataclass
+class _DirectiveOptions:
+    content: str
+    options: dict[str, Any]
+    errors: list[tuple[str, int | None]]
+    has_options: bool
+
+
+def _parse_directive_options(
     content: str,
     directive_class: type[Directive],
     as_yaml: bool,
     line: int | None,
     additional_options: dict[str, str] | None = None,
-) -> tuple[str, dict, list[tuple[str, int | None]]]:
+) -> _DirectiveOptions:
     """Parse (and validate) the directive option section.
 
     :returns: (content, options, validation_errors)
@@ -165,6 +192,8 @@ def parse_directive_options(
         yaml_block = "\n".join(yaml_lines)
         content = "\n".join(content_lines)
 
+    has_options_block = yaml_block is not None
+
     if as_yaml:
         yaml_errors: list[tuple[str, int | None]] = []
         try:
@@ -175,19 +204,24 @@ def parse_directive_options(
         if not isinstance(yaml_options, dict):
             yaml_options = {}
             yaml_errors.append(("Invalid options format (not a dict)", line))
-        return content, yaml_options, yaml_errors
+        return _DirectiveOptions(content, yaml_options, yaml_errors, has_options_block)
 
     options: dict[str, str] = {}
     if yaml_block is not None:
         try:
             options = dict(options_to_items(yaml_block))
         except TokenizeError as err:
-            return content, options, [(f"Invalid options format: {err.problem}", line)]
+            return _DirectiveOptions(
+                content,
+                options,
+                [(f"Invalid options format: {err.problem}", line)],
+                has_options_block,
+            )
 
     if issubclass(directive_class, TestDirective):
         # technically this directive spec only accepts one option ('option')
         # but since its for testing only we accept all options
-        return content, options, []
+        return _DirectiveOptions(content, options, [], has_options_block)
 
     if additional_options:
         # The options block takes priority over additional options
@@ -230,7 +264,7 @@ def parse_directive_options(
             )
         )
 
-    return content, new_options, validation_errors
+    return _DirectiveOptions(content, new_options, validation_errors, has_options_block)
 
 
 def parse_directive_arguments(
