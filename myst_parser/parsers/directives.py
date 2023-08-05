@@ -118,7 +118,7 @@ def parse_directive_text(
 
     if not (directive_class.required_arguments or directive_class.optional_arguments):
         # If there are no possible arguments, then the body can start on the argument line
-        if first_line:
+        if first_line.strip():
             if has_options_block and any(body_lines):
                 parse_errors.append(
                     (
